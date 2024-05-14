@@ -1,0 +1,40 @@
+name: Deploy to ECS
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    env:
+      your-image-name: meu-site
+      your-aws-account-id: ${{SECRET.ID}}
+      your-region: ${{SECRET_REGION}}
+      your-ecs-cluster-name: ${{CLUSTER}}
+      your-ecs-service-name: ${{SERVICE}}
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v2
+
+      - name: Login to AWS ECR
+        uses: aws-actions/amazon-ecr-login@v1
+
+      - name: Build Docker image
+        run: docker build -t your-image-name .
+
+      - name: Tag Docker image
+        run: docker tag projeto-pessoal:latest your-aws-account-id.dkr.ecr.your-region.amazonaws.com/your-image-name:latest
+
+      - name: Push Docker image to ECR
+        run: docker push your-aws-account-id.dkr.ecr.your-region.amazonaws.com/your-image-name:latest
+
+      - name: Update ECS Service
+        uses: aws-actions/amazon-ecs-deploy-task@v2
+        with:
+          cluster: your-ecs-cluster-name
+          service: your-ecs-service-name
+          image: your-aws-account-id.dkr.ecr.your-region.amazonaws.com/your-image-name:latest
+          credentials: ${{ AWS_ACCESS_KEY_ID }}, ${{ SECRET_ACCESS_KEY }}
+
