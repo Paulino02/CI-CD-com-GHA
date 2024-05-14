@@ -5,40 +5,36 @@ on:
     branches:
       - main
 
+env:
+  your_image_name: "meu-site"
+  your_aws_account_id: ${{ secrets.SECRET_ID }}
+  your_region: ${{ secrets.SECRET_REGION }}
+  your_ecs_cluster_name: ${{ secrets.CLUSTER }}
+  your_ecs_service_name: ${{ secrets.SERVICE }}
+
 jobs:
   deploy:
     runs-on: ubuntu-latest
-    env:
-      your_image_name: "meu-site"
-      your_aws_account_id: ${{ secrets.SECRET_ID }}
-      your_region: ${{ secrets.SECRET_REGION }}
-      your_ecs_cluster_name: ${{ secrets.CLUSTER }}
-      your_ecs_service_name: ${{ secrets.SERVICE }}
+    
     steps:
       - name: Checkout Repository
         uses: actions/checkout@v2
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v1
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ secrets.SECRET_REGION }}
 
       - name: Login to AWS ECR
         uses: aws-actions/amazon-ecr-login@v2
 
       - name: Build Docker image
-        run: |
-          docker build -t $your_image_name .
+        run: docker build -t $your_image_name .
 
       - name: Tag Docker image
-        run: |
-          docker tag $your_image_name:latest $your_aws_account_id.dkr.ecr.$your_region.amazonaws.com/$your_image_name:latest
+        run: docker tag $your_image_name:latest $your_aws_account_id.dkr.ecr.$your_region.amazonaws.com/$your_image_name:latest
 
       - name: Push Docker image to ECR
-        run: |
-          docker push $your_aws_account_id.dkr.ecr.$your_region.amazonaws.com/$your_image_name:latest
-
-      - name: Update ECS Service
-        uses: aws-actions/amazon-ecs-deploy-task@v2
-        with:
-          cluster: $your_ecs_cluster_name
-          service: $your_ecs_service_name
-          image: $your_aws_account_id.dkr.ecr.$your_region.amazonaws.com/$your_image_name:latest
-          credentials: |
-            ${{ secrets.AWS_ACCESS_KEY_ID }},
-            ${{ secrets.SECRET_ACCESS_KEY }}
+        run: docker push $your_aws_account_id.dkr.ecr.$your_region.amazonaws.com/$your_image_name:latest
