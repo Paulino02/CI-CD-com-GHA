@@ -6,7 +6,7 @@ on:
       - main
 
 env:
-  your_image_name: meu-site
+  your_image_name: meu-site1
   your_aws_account_id: ${{ secrets.SECRET_ID }}
   your_region: ${{ secrets.SECRET_REGION }}
   your_ecs_cluster_name: ${{ secrets.CLUSTER }}
