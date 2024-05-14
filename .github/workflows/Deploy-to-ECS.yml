@@ -9,32 +9,36 @@ jobs:
   deploy:
     runs-on: ubuntu-latest
     env:
-      your-image-name: meu-site
-      your-aws-account-id: ${{SECRET_ID}}
-      your-region: ${{SECRET_REGION}}
-      your-ecs-cluster-name: ${{CLUSTER}}
-      your-ecs-service-name: ${{SERVICE}}
+      your_image_name: "meu-site"
+      your_aws_account_id: ${{ secrets.SECRET_ID }}
+      your_region: ${{ secrets.SECRET_REGION }}
+      your_ecs_cluster_name: ${{ secrets.CLUSTER }}
+      your_ecs_service_name: ${{ secrets.SERVICE }}
     steps:
       - name: Checkout Repository
         uses: actions/checkout@v2
 
       - name: Login to AWS ECR
-        uses: aws-actions/amazon-ecr-login@v1
+        uses: aws-actions/amazon-ecr-login@v2
 
       - name: Build Docker image
-        run: docker build -t your-image-name .
+        run: |
+          docker build -t $your_image_name .
 
       - name: Tag Docker image
-        run: docker tag projeto-pessoal:latest your-aws-account-id.dkr.ecr.your-region.amazonaws.com/your-image-name:latest
+        run: |
+          docker tag $your_image_name:latest $your_aws_account_id.dkr.ecr.$your_region.amazonaws.com/$your_image_name:latest
 
       - name: Push Docker image to ECR
-        run: docker push your-aws-account-id.dkr.ecr.your-region.amazonaws.com/your-image-name:latest
+        run: |
+          docker push $your_aws_account_id.dkr.ecr.$your_region.amazonaws.com/$your_image_name:latest
 
       - name: Update ECS Service
         uses: aws-actions/amazon-ecs-deploy-task@v2
         with:
-          cluster: your-ecs-cluster-name
-          service: your-ecs-service-name
-          image: your-aws-account-id.dkr.ecr.your-region.amazonaws.com/your-image-name:latest
-          credentials: ${{ AWS_ACCESS_KEY_ID }}, ${{ SECRET_ACCESS_KEY }}
-
+          cluster: $your_ecs_cluster_name
+          service: $your_ecs_service_name
+          image: $your_aws_account_id.dkr.ecr.$your_region.amazonaws.com/$your_image_name:latest
+          credentials: |
+            ${{ secrets.AWS_ACCESS_KEY_ID }},
+            ${{ secrets.SECRET_ACCESS_KEY }}
