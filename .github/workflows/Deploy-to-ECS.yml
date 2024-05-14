@@ -6,11 +6,11 @@ on:
       - main
 
 env:
-  your-image-name: meu-site
-  your-aws-account-id: ${{ secrets.SECRET_ID }}
-  your-region: ${{ secrets.SECRET_REGION }}
-  your-ecs-cluster-name: ${{ secrets.CLUSTER }}
-  your-ecs-service-name: ${{ secrets.SERVICE }}
+  your_image_name: meu-site
+  your_aws_account_id: ${{ secrets.SECRET_ID }}
+  your_region: ${{ secrets.SECRET_REGION }}
+  your_ecs_cluster_name: ${{ secrets.CLUSTER }}
+  your_ecs_service_name: ${{ secrets.SERVICE }}
 
 jobs:
   deploy:
@@ -26,19 +26,19 @@ jobs:
         with:
           aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          aws-region: ${{ secrets.SECRET_REGION }} # Corrigi para usar SECRETS_REGION ao invés de SECRET_REGION
+          aws-region: ${{ secrets.SECRET_REGION }}
 
       - name: Login to AWS ECR
         uses: aws-actions/amazon-ecr-login@v1
 
       - name: Build Docker image
-        run: docker build -t $your-image-name .
+        run: docker build -t $your_image_name .
 
       - name: Tag Docker image
-        run: docker tag $your-image-name:latest $your-aws-account-id.dkr.ecr.$your-region.amazonaws.com/$your-image-name:latest
+        run: docker tag $your_image_name:latest $your_aws_account_id.dkr.ecr.$your_region.amazonaws.com/$your_image_name:latest
       
       - name: Create ECR Repository
-        run: aws ecr create-repository --repository-name meu-site --region $your-region # Corrigi para usar $your-region ao invés de ${{ secrets.SECRET_REGION }}
+        run: aws ecr create-repository --repository-name $your_image_name --region $your_region
 
       - name: Push Docker image to ECR
-        run: docker push $your-aws-account-id.dkr.ecr.$your-region.amazonaws.com/$your-image-name:latest
+        run: docker push $your_aws_account_id.dkr.ecr.$your_region.amazonaws.com/$your_image_name:latest
