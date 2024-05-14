@@ -26,7 +26,7 @@ jobs:
         with:
           aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          aws-region: ${{ SECRET_REGION }}
+          aws-region: ${{ secrets.SECRET_REGION }} # Corrigi para usar SECRETS_REGION ao invés de SECRET_REGION
 
       - name: Login to AWS ECR
         uses: aws-actions/amazon-ecr-login@v1
@@ -38,7 +38,7 @@ jobs:
         run: docker tag $your-image-name:latest $your-aws-account-id.dkr.ecr.$your-region.amazonaws.com/$your-image-name:latest
       
       - name: Create ECR Repository
-        run: aws ecr create-repository --repository-name meu-site --region ${{ secrets.SECRET_REGION }}
+        run: aws ecr create-repository --repository-name meu-site --region $your-region # Corrigi para usar $your-region ao invés de ${{ secrets.SECRET_REGION }}
 
       - name: Push Docker image to ECR
         run: docker push $your-aws-account-id.dkr.ecr.$your-region.amazonaws.com/$your-image-name:latest
