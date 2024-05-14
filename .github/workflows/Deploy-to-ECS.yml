@@ -10,7 +10,7 @@ jobs:
     runs-on: ubuntu-latest
     env:
       your-image-name: meu-site
-      your-aws-account-id: ${{SECRET.ID}}
+      your-aws-account-id: ${{SECRET_ID}}
       your-region: ${{SECRET_REGION}}
       your-ecs-cluster-name: ${{CLUSTER}}
       your-ecs-service-name: ${{SERVICE}}
