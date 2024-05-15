@@ -6,8 +6,7 @@ on:
       - main
 
 env:
-  repoECR: pagweb
-  your_image_name: meu-site
+  repo: repo-images
   your_aws_account_id: ${{ secrets.SECRET_ID }}
   your_region: ${{ secrets.SECRET_REGION }}
   your_ecs_cluster_name: ${{ secrets.CLUSTER }}
@@ -19,7 +18,8 @@ jobs:
     
     steps:
       - name: Checkout Repository
-        uses: actions/checkout@v2
+        id: login-ecr
+        uses: actions/checkout@v1
       
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v1
@@ -31,21 +31,14 @@ jobs:
       - name: Login to AWS ECR
         uses: aws-actions/amazon-ecr-login@v1
 
-      - name: Check if ECR repository exists
-        id: check-ecr-repo
-        run: |
-          aws ecr describe-repositories --repository-names ${{ env.repoECR }} --region ${{ env.your_region }} || exit 0
-          exit 1
-
-      - name: Create ECR Repository if not exists
-        if: steps.check-ecr-repo.outcome == 'failure'
-        run: aws ecr create-repository --repository-name ${{ env.repoECR }} --region ${{ env.your_region }}
-
       - name: Build Docker image
-        run: docker build -t ${{ env.your_image_name }} .
+        run: docker build -t nginx-html .
 
       - name: Tag Docker image
-        run: docker tag ${{ env.your_image_name }}:latest ${{ env.your_aws_account_id }}.dkr.ecr.${{ env.your_region }}.amazonaws.com/${{ env.your_image_name }}:latest
+        run: docker tag $your_image_name:latest $your_aws_account_id.dkr.ecr.$your_region.amazonaws.com/$repo-images:latest
       
+      - name: Create ECR Repository
+        run: aws ecr create-repository --repository-name $repo-images --region $your_region
+
       - name: Push Docker image to ECR
-        run: docker push ${{ env.your_aws_account_id }}.dkr.ecr.${{ env.your_region }}.amazonaws.com/${{ env.your_image_name }}:latest
+        run: docker push $your_aws_account_id.dkr.ecr.$your_region.amazonaws.com/$repo-images:latest
