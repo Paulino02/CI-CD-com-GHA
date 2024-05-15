@@ -31,14 +31,72 @@ jobs:
       - name: Login to AWS ECR
         uses: aws-actions/amazon-ecr-login@v1
 
+      - name: Check if ECR repository exists
+        id: check-ecr-repo
+        run: |
+          aws ecr describe-repositories --repository-names ${{ env.repoECR }} --region ${{ env.your_region }} || exit 0
+          exit 1
+
+      - name: Create ECR Repository if not exists
+        if: steps.check-ecr-repo.outcome == 'failure'
+        run: aws ecr create-repository --repository-name ${{ env.repoECR }} --region ${{ env.your_region }}
+
       - name: Build Docker image
         run: docker build -t ${{ env.your_image_name }} .
 
       - name: Tag Docker image
         run: docker tag ${{ env.your_image_name }}:latest ${{ env.your_aws_account_id }}.dkr.ecr.${{ env.your_region }}.amazonaws.com/${{ env.your_image_name }}:latest
       
-      - name: Create ECR Repository
+      - name: Push Docker image to ECR
+        run: docker push ${{ env.your_aws_account_id }}.dkr.ecr.${{ env.your_region }}.amazonaws.com/${{ env.your_image_name }}:latest
+name: Deploy to ECS
+
+on:
+  push:
+    branches:
+      - main
+
+env:
+  repoECR: pagweb
+  your_image_name: meu-site
+  your_aws_account_id: ${{ secrets.SECRET_ID }}
+  your_region: ${{ secrets.SECRET_REGION }}
+  your_ecs_cluster_name: ${{ secrets.CLUSTER }}
+  your_ecs_service_name: ${{ secrets.SERVICE }}
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v2
+      
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v1
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ secrets.SECRET_REGION }}
+
+      - name: Login to AWS ECR
+        uses: aws-actions/amazon-ecr-login@v1
+
+      - name: Check if ECR repository exists
+        id: check-ecr-repo
+        run: |
+          aws ecr describe-repositories --repository-names ${{ env.repoECR }} --region ${{ env.your_region }} || exit 0
+          exit 1
+
+      - name: Create ECR Repository if not exists
+        if: steps.check-ecr-repo.outcome == 'failure'
         run: aws ecr create-repository --repository-name ${{ env.repoECR }} --region ${{ env.your_region }}
 
+      - name: Build Docker image
+        run: docker build -t ${{ env.your_image_name }} .
+
+      - name: Tag Docker image
+        run: docker tag ${{ env.your_image_name }}:latest ${{ env.your_aws_account_id }}.dkr.ecr.${{ env.your_region }}.amazonaws.com/${{ env.your_image_name }}:latest
+      
       - name: Push Docker image to ECR
         run: docker push ${{ env.your_aws_account_id }}.dkr.ecr.${{ env.your_region }}.amazonaws.com/${{ env.your_image_name }}:latest
