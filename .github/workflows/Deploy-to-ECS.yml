@@ -35,10 +35,10 @@ jobs:
         run: docker build -t nginx-html .
 
       - name: Tag Docker image
-        run: docker tag $your_image_name:latest $your_aws_account_id.dkr.ecr.$your_region.amazonaws.com/$repo-images:latest
+        run: docker tag $repo:latest $your_aws_account_id.dkr.ecr.$your_region.amazonaws.com/$repo:latest
       
       - name: Create ECR Repository
-        run: aws ecr create-repository --repository-name $repo-images --region $your_region
+        run: aws ecr create-repository --repository-name $repo --region $your_region
 
       - name: Push Docker image to ECR
-        run: docker push $your_aws_account_id.dkr.ecr.$your_region.amazonaws.com/$repo-images:latest
+        run: docker push $your_aws_account_id.dkr.ecr.$your_region.amazonaws.com/$repo:latest
