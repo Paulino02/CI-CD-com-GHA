@@ -6,7 +6,7 @@ on:
       - main
 
 env:
-  repo: repo-images
+  your_image_name: meu-site
   your_aws_account_id: ${{ secrets.SECRET_ID }}
   your_region: ${{ secrets.SECRET_REGION }}
   your_ecs_cluster_name: ${{ secrets.CLUSTER }}
@@ -32,13 +32,13 @@ jobs:
         uses: aws-actions/amazon-ecr-login@v1
 
       - name: Build Docker image
-        run: docker build -t nginx-html .
+        run: docker build -t $your_image_name .
 
       - name: Tag Docker image
-        run: docker tag $repo:latest $your_aws_account_id.dkr.ecr.$your_region.amazonaws.com/$repo:latest
+        run: docker tag $your_image_name:latest $your_aws_account_id.dkr.ecr.$your_region.amazonaws.com/$your_image_name:latest
       
       - name: Create ECR Repository
-        run: aws ecr create-repository --repository-name $repo --region $your_region
+        run: aws ecr create-repository --repository-name $your_image_name --region $your_region
 
       - name: Push Docker image to ECR
-        run: docker push $your_aws_account_id.dkr.ecr.$your_region.amazonaws.com/$repo:latest
+        run: docker push $your_aws_account_id.dkr.ecr.$your_region.amazonaws.com/$your_image_name:latest
